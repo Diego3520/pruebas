@@ -1,0 +1,143 @@
+{% extends 'basest/base.html' %}
+{% load static %}
+{% block content %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("form").on('submit', function (event) {
+                event.preventDefault();
+                $.ajax({
+                    url: "{% url 'correoEnviar' %}",
+                    type: 'POST',
+                    data: {
+                        email: $('#email').val(),
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success: function (response) {
+                        // Siempre oculta el formulario y muestra el mensaje de éxito
+                        $('.custom-form').hide();
+                        $('.success-message').show();
+                    },
+                    error: function (response) {
+                        // Aquí puedes manejar la respuesta fallida, por ejemplo, mostrando un mensaje de error
+                        alert('Error al enviar el correo');
+                    }
+                });
+            });
+        });
+    </script>
+<style>
+    .center-screen {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 75vh;
+    }
+    .custom-form {
+        background-color: #f7f7f7;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .custom-form h2 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    .custom-form input[type="email"] {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1.6em;
+    }
+    .custom-form button {
+        width: 50%; /* Ajusta esto para cambiar el tamaño del botón */
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+        background-color: var(--blue-chill-500);
+        color: white;
+        cursor: pointer;
+        display: block; /* Hace que el botón ocupe su propia línea */
+        margin-left: 0; /* Alinea el botón a la izquierda */
+    }
+    .custom-form button:hover {
+        background-color: var(--blue-chill-950);
+    }
+
+    .custom-form label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-size: 1.5em;
+    }
+
+    .notification {
+        background-color: var(--blue-chill-300); /* Fondo blanco para la notificación */
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin-top: 2rem;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-icon {
+        margin-right: 0.5rem;
+    }
+
+    .notification-icon svg {
+        height: 70px;
+        width: 70px;
+    }
+
+    .notification-title {
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+
+    .notification-message {
+        margin-top: 0.5rem;
+        font-size: 1.3em;
+    }
+</style>
+<div class="center-screen">
+    <div class="success-message" style="display: none">
+        <div class="notification">
+            <div class="notification-header">
+                <div class="notification-icon">
+                    <svg class="h-6 w-6 text-white dark:text-zinc-200" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="notification-title">Correo electrónico de restablecimiento de contraseña enviado</div>
+            </div>
+            <div class="notification-message">
+                Pronto recibirás un correo electrónico para restablecer tu contraseña. Si no lo encuentras, comprueba la
+                carpeta
+                de correo no deseado y la papelera.
+            </div>
+        </div>
+    </div>
+    <!-- Muestra el formulario si mensaje_enviado es False -->
+    <div class="custom-form">
+        <h2>¿Has olvidado tu contraseña?</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label for="email">Email *</label><input type="email" id="email" name="email" required>
+            <label>Se enviará un mensaje a este email<br> para restablecer su contraseña</label>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

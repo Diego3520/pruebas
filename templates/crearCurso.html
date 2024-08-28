@@ -1,0 +1,126 @@
+{% extends 'basest/baseLoginInstructor.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/cardsCurso.css' %}">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        toastr.options = {
+            "positionClass": "toast-bottom-right",
+        }
+    </script>
+    <div class="cursos">
+        <h1>Cursos</h1>
+        <div class="cursos-container">
+            <div class="row">
+                {% for curso in cursos_del_instructor %}
+                    <div class="col-md-3">
+                        <a href="#" class="card-link">
+                            <div class="card">
+                                <div class="card-body position-relative">
+                                    <h5 class="card-title">{{ curso.nombre }}</h5>
+                                    <p class="card-text limited-text">{{ curso.descripcion }}</p>
+                                </div>
+                                <div class="dropdown position-absolute top-0 end-0 mt-3 curso-dropdown">
+                                    <a class="dropdown-toggle" href="#" role="button"
+                                       id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                             viewBox="0 0 24 24" fill="none" stroke="#438e96" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round"
+                                             class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                            <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                            <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                            <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                        </svg>
+                                    </a>
+
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                        <li><a class="dropdown-item" href="{% url 'obtenerDatosCurso' curso.id %}">Editar
+                                            datos</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'agregar_contenido' curso.id %}">Agregar contenido</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="eliminarCurso('{{ curso.id }}')">Eliminar curso</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center mt-5">
+                        <p>No tiene cursos creados</p>
+                   </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal HTML -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title w-100 text-center" id="confirmModalLabel">¿Deseas eliminar este curso?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Eliminarás definitivamente el curso y todo el contenido que tenga. No podrás recuperar ningún dato que este guardado en el curso.
+                </div>
+                <div class="modal-footer d-flex justify-content-md-around">
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" >Eliminar</button>
+                    <button type="button" class="btn btn-outline-success" id="cancelBtn" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                {% if 'curso_actualizado' in message.tags %}
+                toastr.success("{{ message }}");
+                {% endif %}
+            {% endfor %}
+        </script>
+    {% endif %}
+
+    <script>
+        var cursoIdToDelete = null;
+
+        function eliminarCurso(cursoId) {
+            cursoIdToDelete = cursoId;
+            $('#confirmModal').modal('show');
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (cursoIdToDelete !== null) {
+                $.ajax({
+                    url: "{% url 'eliminar_curso' 0 %}".replace("0", cursoIdToDelete),
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        $('#confirmModal').modal('hide');
+                        if (response.success) {
+                            toastr.success('Curso eliminado exitosamente.');
+                            location.reload();  // Recargar la página para reflejar los cambios
+                        } else {
+                            toastr.error('Hubo un problema al eliminar el curso.');
+                        }
+                    },
+                    error: function() {
+                        $('#confirmModal').modal('hide');
+                        toastr.error('Hubo un problema al eliminar el curso.');
+                    }
+                });
+            }
+        });
+        function mostrarMensajeEliminado() {
+            toastr.success('Curso eliminado correctamente');
+            setTimeout(function() {
+                toastr.clear();  // Ocultar el mensaje después de 2 segundos
+            }, 2000);
+        }
+    </script>
+{% endblock %}

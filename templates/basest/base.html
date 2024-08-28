@@ -1,0 +1,669 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EducaPlus</title>
+    <link rel="icon" href="{% static 'images/icon.jpg' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/dist/bootstrap-icons.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<!-- Modal de Advertencia -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="warningModalLabel">Inicio de sesión requerido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Por favor, inicia sesión para poder realizar una búsqueda.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-personalizado">
+    <div class="container-fluid d-flex justify-content-between">
+        <div>
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'images/casa.svg' %}" alt="User Icon" width="23" height="23"
+                     class="d-inline-block align-text-top">
+                Inicio
+            </a>
+        </div>
+        <form class="d-flex" id="searchForm" action="/search" method="get">
+            <input class="form-control me-2 custom-search-bar" type="search" name="q" placeholder="Buscar..."
+                   aria-label="Search" >
+
+        </form>
+        <div>
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <button type="button" class="btn btn-outline-success custom-button" data-bs-toggle="modal"
+                            data-bs-target="#loginModal">Iniciar sesión
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-outline-success custom-button button-register"
+                            data-bs-toggle="modal" data-bs-target="#registerModalUN">Registrarse
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% block content %}{% endblock %}
+<div class="modal fade" id="registerModalUN" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <ul class="nav nav-tabs nav-fill w-100" id="myTab" role="tablist">
+                    <li class="nav-item w-50 text-center" role="presentation">
+                        <a class="nav-link active text-center custom-tab" id="student-tab" data-bs-toggle="tab" href="#registerModal" role="tab"
+                           aria-controls="student" aria-selected="true">Estudiante</a>
+                    </li>
+                    <li class="nav-item w-50 text-center" role="presentation">
+                        <a class="nav-link text-center custom-tab" id="instructor-tab" data-bs-toggle="tab" href="#teachModal" role="tab"
+                           aria-controls="instructor" aria-selected="false">Instructor</a>
+                    </li>
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="registerModal" role="tabpanel" aria-labelledby="student-tab">
+                        <form action="/register/" method="post" id="register">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="registerName" class="form-label required">Nombre</label>
+                                    <input type="text" class="form-control" id="registerName" name="name"
+                                           required maxlength="20">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="registerSurname" class="form-label required">Apellidos</label>
+                                    <input type="text" class="form-control" id="registerSurname" name="surname"
+                                           required maxlength="20">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerEmail" class="form-label required">Correo</label>
+                                <input type="email" class="form-control" id="registerEmail" name="email"
+                                       autocomplete="email"
+                                       required>
+                                <div id="emailError" class="text-danger"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerPassword" class="form-label required">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="registerPassword" name="password"
+                                           autocomplete="new-password" required maxlength="15">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="passwordToggle"><i
+                                                class="bi bi-eye-fill"></i></button>
+                                    </div>
+                                </div>
+                                <span id="registerPasswordError"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerPasswordConfirm" class="form-label required">Repetir
+                                    contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="registerPasswordConfirm"
+                                           name="password_confirm"
+                                           oninput="validatePassword()"
+                                           autocomplete="new-password" required maxlength="15">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                                id="passwordConfirmToggle"><i
+                                                class="bi bi-eye-fill"></i></button>
+                                    </div>
+                                </div>
+                                <span id="registerPasswordConfirmError"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerBirthdate" class="form-label required">Fecha de nacimiento</label>
+                                <input type="date" class="form-control" id="registerBirthdate" name="birthdate"
+                                       required>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-outline-success custom-button">Crear cuenta</button>
+                            </div>
+                            <div id="successMessage" class="text-success text-center"></div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="teachModal" role="tabpanel" aria-labelledby="instructor-tab">
+                        <form action="/teach/" method="post" id="teachForm">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label required">Nombre</label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           required maxlength="20">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="surname" class="form-label required">Apellidos</label>
+                                    <input type="text" class="form-control" id="surname" name="surname"
+                                           required maxlength="20">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="teachEmail" class="form-label required">Correo</label>
+                                <input type="email" class="form-control" id="teachEmail" name="email"
+                                       autocomplete="email"
+                                       required>
+                                <div id="emailErrorTeach" class="text-danger"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label required">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password"
+                                           autocomplete="new-password" required maxlength="15">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="passwordToggleB"><i
+                                                class="bi bi-eye-fill"></i></button>
+                                    </div>
+                                </div>
+                                <span id="passwordError" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="passwordConfirm" class="form-label required">Repetir contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="passwordConfirm"
+                                           name="passwordConfirm"
+                                           autocomplete="new-password"
+                                           oninput="validatePassword()"
+                                           required maxlength="15">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                                id="passwordConfirmToggleB"><i
+                                                class="bi bi-eye-fill"></i></button>
+                                    </div>
+                                </div>
+                                <span id="passwordConfirmError" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerBirthdate1" class="form-label required">Fecha de nacimiento</label>
+                                <input type="date" class="form-control" id="registerBirthdate1" name="birthdate1"
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="specialization" class="form-label required">Área de Especialización</label>
+                                <select class="form-control" id="specialization" name="specialization">
+                                    <option value="Tecnología">Tecnología</option>
+                                    <option value="Economía">Economía</option>
+                                    <option value="Humanidades">Humanidades</option>
+                                    <option value="Medicina">Medicina</option>
+                                    <option value="Ciencias jurídicas">Ciencias jurídicas</option>
+                                    <option value="Arquitectura">Arquitectura</option>
+                                </select>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-outline-success custom-button">Crear cuenta</button>
+                            </div>
+                            <div id="successMessageTeach" class="text-success text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex justify-content-center align-items-center w-100">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar sesión</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="(%url 'login' %)" id="loginForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label required">Correo electrónico</label>
+                        <input type="email" class="form-control" id="loginEmail" name="email" autocomplete="email">
+                        <span id="emailErrorL" class="error-message"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label required">Contraseña</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="loginPassword" name="password"
+                                   autocomplete="current-password">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" id="loginPasswordToggle"><i
+                                        class="bi bi-eye-fill"></i></button>
+                            </div>
+                        </div>
+                        <span id="passwordErrorL" class="error-message"></span>
+                    </div>
+                    <div class="mb-3">
+                        <a href="/recuperarContraseña/" class="btn-link">¿Olvidaste tu contraseña?</a>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-outline-success custom-button">Ingresar</button>
+                    </div>
+                    <div id="loginError" class="text-danger mt-2"></div> <!-- Mostrar errores aquí -->
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //ver contraseña
+        document.getElementById('passwordToggleB').addEventListener('click', function () {
+            var passwordInput = document.getElementById('password');
+            var passwordToggleIcon = this.querySelector('i');
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                passwordToggleIcon.classList.remove('bi-eye-fill');
+                passwordToggleIcon.classList.add('bi-eye-slash-fill');
+            } else {
+                passwordInput.type = "password";
+                passwordToggleIcon.classList.remove('bi-eye-slash-fill');
+                passwordToggleIcon.classList.add('bi-eye-fill');
+            }
+        });
+    
+        document.getElementById('passwordConfirmToggleB').addEventListener('click', function () {
+            var passwordConfirmInput = document.getElementById('passwordConfirm');
+            var passwordConfirmToggleIcon = this.querySelector('i');
+            if (passwordConfirmInput.type === "password") {
+                passwordConfirmInput.type = "text";
+                passwordConfirmToggleIcon.classList.remove('bi-eye-fill');
+                passwordConfirmToggleIcon.classList.add('bi-eye-slash-fill');
+            } else {
+                passwordConfirmInput.type = "password";
+                passwordConfirmToggleIcon.classList.remove('bi-eye-slash-fill');
+                passwordConfirmToggleIcon.classList.add('bi-eye-fill');
+            }
+        });
+    
+        document.getElementById('passwordToggle').addEventListener('click', function () {
+            var passwordInput = document.getElementById('registerPassword');
+            var passwordToggleIcon = this.querySelector('i');
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                passwordToggleIcon.classList.remove('bi-eye-fill');
+                passwordToggleIcon.classList.add('bi-eye-slash-fill');
+            } else {
+                passwordInput.type = "password";
+                passwordToggleIcon.classList.remove('bi-eye-slash-fill');
+                passwordToggleIcon.classList.add('bi-eye-fill');
+            }
+        });
+    
+        document.getElementById('passwordConfirmToggle').addEventListener('click', function () {
+            var passwordConfirmInput = document.getElementById('registerPasswordConfirm');
+            var passwordConfirmToggleIcon = this.querySelector('i');
+            if (passwordConfirmInput.type === "password") {
+                passwordConfirmInput.type = "text";
+                passwordConfirmToggleIcon.classList.remove('bi-eye-fill');
+                passwordConfirmToggleIcon.classList.add('bi-eye-slash-fill');
+            } else {
+                passwordConfirmInput.type = "password";
+                passwordConfirmToggleIcon.classList.remove('bi-eye-slash-fill');
+                passwordConfirmToggleIcon.classList.add('bi-eye-fill');
+            }
+        });
+        ////
+    
+        function validatePassword(modalId, passwordId, passwordConfirmId) {
+            document.getElementById(modalId).addEventListener('submit', function (event) {
+                var password = document.getElementById(passwordId).value;
+                var passwordConfirm = document.getElementById(passwordConfirmId).value;
+    
+                var passwordElement = document.getElementById(passwordId);
+                var passwordConfirmElement = document.getElementById(passwordConfirmId);
+    
+                if (password !== passwordConfirm) {
+                    passwordElement.classList.add('input-error');
+                    passwordConfirmElement.classList.add('input-error');
+                    event.preventDefault();
+                } else {
+                    passwordElement.classList.remove('input-error');
+                    passwordConfirmElement.classList.remove('input-error');
+                }
+            });
+        }
+    
+        function setMaxDate(inputId) {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var yyyy = today.getFullYear();
+    
+            today = yyyy + '-' + mm + '-' + dd;
+            document.getElementById(inputId).setAttribute("max", today);
+        }
+    
+        validatePassword('registerModal', 'registerPassword', 'registerPasswordConfirm');
+        validatePassword('teachModal', 'password', 'passwordConfirm');
+    
+        setMaxDate('registerBirthdate');
+        setMaxDate('registerBirthdate1');
+    // veriicar correo existente
+    $(document).ready(function () {
+    $('#register').on('submit', function (e) {
+        e.preventDefault(); // Evitar el envío del formulario por defecto
+        var correo = $('#registerEmail').val();
+        var allValidationsPassed = true; // Flag para verificar si todas las validaciones son exitosas
+
+        // Validación del correo electrónico
+        $.ajax({
+            url: '/api/verificar-correo/',  // URL de la vista de Django para verificar correo
+            method: 'POST',
+            data: {correo: correo},
+            success: function (response) {
+                if (response.existe) {
+                    $('#emailError').text('El correo electrónico ya está registrado').css('color', 'red');
+                    allValidationsPassed = false; // Marcar como que la validación falló
+                } else {
+                    $('#emailError').text('');
+                }
+
+                // Otras validaciones
+                var nameValid = validateInput($('#registerName'), 'El nombre debe tener entre 2 y 20 caracteres y solo letras.');
+                var surnameValid = validateInput($('#registerSurname'), 'El apellido debe tener entre 2 y 20 caracteres y solo letras.');
+                var passwordValid = validatePassword($('#registerPassword'), $('#registerPasswordConfirm'));
+
+                if (!nameValid || !surnameValid || !passwordValid || !allValidationsPassed) {
+                    allValidationsPassed = false; // Marcar como que la validación falló
+                }
+
+                // Enviar el formulario solo si todas las validaciones son exitosas
+                if (allValidationsPassed) {
+                    $('#register')[0].submit(); // Envía el formulario
+                    $('#successMessage').text('Registro Exitoso');
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.status + ": " + xhr.responseText);
+                $('#emailError').text('Error al verificar el correo').css('color', 'red');
+                allValidationsPassed = false; // Marcar como que la validación falló
+            }
+        });
+    });
+
+    function validateInput(inputElement, errorMessage) {
+    var errorElement = $('#' + inputElement.attr('id') + 'Error');
+    var pattern = /^[a-zA-ZñÑ\s]{2,20}$/;
+    var trimmedValue = inputElement.val().trim(); //
+
+    if (!trimmedValue) {
+        errorMessage = 'Este campo es obligatorio.';
+    } else if (!pattern.test(trimmedValue)) {
+        errorMessage = 'Debe tener entre 2 y 20 caracteres y solo letras.';
+    } else {
+        errorMessage = ''; 
+    }
+
+    // Buscar el elemento error por su ID
+    if (!errorElement.length) {
+        errorElement = $('<div class="error-message"></div>'); // Crear el elemento si no existe
+        errorElement.attr('id', inputElement.attr('id') + 'Error');
+        inputElement.after(errorElement); // Insertar después del input
+    }
+
+    errorElement.text(errorMessage); // Actualizar el mensaje de error
+
+    if (errorMessage) {
+        inputElement.addClass('input-error');
+        errorElement.css('color', 'red'); 
+        return false;
+    } else {
+        inputElement.removeClass('input-error');
+        errorElement.css('color', '');
+        return true;
+    }
+}
+    function validatePassword(passwordElement, confirmPasswordElement) {
+        var pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,15}$/;
+        var password = passwordElement.val();
+        var confirmPassword = confirmPasswordElement.val();
+        var error = false;
+
+        if (!pattern.test(password)) {
+            passwordElement.addClass('input-error');
+            $('#registerPasswordError').text('Debe tener una mayúscula, una minúscula, un número y un carácter especial, mínimo 8 caracteres y máximo 15.').css('color', 'red');
+            error = true;
+        } else {
+            passwordElement.removeClass('input-error');
+            $('#registerPasswordError').text('').css('color', 'red');
+        }
+
+        if (!pattern.test(confirmPassword)) {
+            confirmPasswordElement.addClass('input-error');
+            $('#registerPasswordConfirmError').text('Debe tener una mayúscula, una minúscula, un número y un carácter especial, mínimo 8 caracteres y máximo 15.').css('color', 'red');
+            error = true;
+        } else {
+            confirmPasswordElement.removeClass('input-error');
+            $('#registerPasswordConfirmError').text('').css('color', 'red');
+        }
+
+        if (password !== confirmPassword) {
+            confirmPasswordElement.addClass('input-error');
+            $('#registerPasswordConfirmError').text('Las contraseñas no coinciden').css('color', 'red');
+            error = true;
+        }
+
+        return !error; 
+    }
+});
+
+    
+    
+    //Ojo de contrase;a login
+    document.getElementById('loginPasswordToggle').addEventListener('click', function () {
+        var passwordInput = document.getElementById('loginPassword');
+        var passwordToggleIcon = this.querySelector('i');
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            passwordToggleIcon.classList.remove('bi-eye-fill');
+            passwordToggleIcon.classList.add('bi-eye-slash-fill');
+        } else {
+            passwordInput.type = "password";
+            passwordToggleIcon.classList.remove('bi-eye-slash-fill');
+            passwordToggleIcon.classList.add('bi-eye-fill');
+        }
+    });
+    
+    //Login
+    $(document).ready(function(){
+    $('#loginForm').on('submit', function(e){
+        e.preventDefault();
+
+        // Validación de campos
+        var emailInput = $('#loginEmail').val();
+        var passwordInput = $('#loginPassword').val();
+        var errorText = '';
+
+        if (emailInput.trim() === '') {
+            $('#emailErrorL').text('Este campo es obligatorio').css('color', 'red');
+            errorText += 'Este campo es obligatorio\n';
+        } else {
+            $('#emailErrorL').text(''); // Limpiar mensaje de error
+        }
+        if (passwordInput.trim() === '') {
+            $('#passwordErrorL').text('Este campo es obligatorio').css('color', 'red');
+            errorText += 'Este campo es obligatorio\n';
+        } else {
+            $('#passwordErrorL').text(''); // Limpiar mensaje de error
+        }
+
+        // Si hay errores, detener el envío del formulario
+        if (errorText !== '') {
+            return;
+        }
+
+        // Si la validación pasa, continuar con la solicitud AJAX
+        var formData = $(this).serialize();
+        $.ajax({
+            type: 'POST',
+            url: '/login/',
+            data: formData,
+            success: function(data){
+                if (data.success) {
+                    // Redireccionar según el tipo de usuario
+                    if (data.userType === 'Instructor') {
+                        window.location.href = '/crearCursos/';
+                    } else if (data.userType === 'Estudiante') {
+                        window.location.href = '/indexLog/';
+                    }
+                } else {
+                    // Mostrar mensaje de error según la respuesta del servidor
+                    if (data.errorType === 'incorrectCredentials') {
+                        $('#loginError').text('Credenciales incorrectas');
+                    } else if (data.errorType === 'emailNotFound') {
+                        $('#loginError').text('Correo electrónico no encontrado');
+                    } else if (data.errorType === 'incorrectPassword') {
+                        $('#loginError').text('Contraseña incorrecta');
+                    } else if (data.errorType === 'tooManyAttempts') {
+                        alert('Demasiados intentos fallidos, Se recargara la pagina');
+                        location.reload();
+                    }
+                }
+            },
+            error: function(){
+                // Manejar errores de conexión
+                $('#loginError').text('Error de conexión');
+            }
+        });
+    });
+});
+
+    //verificar correo existente instructor
+    $(document).ready(function () {
+    $('#teachForm').on('submit', function (e) {
+        e.preventDefault(); // Evitar el envío del formulario por defecto
+        var correo = $('#teachEmail').val();
+        var allValidationsPassed = true; // Flag para verificar si todas las validaciones son exitosas
+
+        // Validación del correo electrónico
+        $.ajax({
+            url: '/api/verificar-correo-teach/',  // URL de la vista de Django para verificar correo
+            method: 'POST',
+            data: {correo: correo},
+            success: function (response) {
+                if (response.existe) {
+                    $('#emailErrorTeach').text('El correo electrónico ya está registrado').css('color', 'red');
+                    allValidationsPassed = false; // Marcar como que la validación falló
+                } else {
+                    $('#emailErrorTeach').text('');
+                }
+
+                // Otras validaciones
+                var nameValid = validateInput($('#name'), 'El nombre debe tener entre 2 y 20 caracteres y solo letras.');
+                var surnameValid = validateInput($('#surname'), 'El apellido debe tener entre 2 y 20 caracteres y solo letras.');
+                var passwordValid = validatePassword($('#password'), $('#passwordConfirm'));
+
+                if (!nameValid || !surnameValid || !passwordValid || !allValidationsPassed) {
+                    allValidationsPassed = false; // Marcar como que la validación falló
+                }
+
+                // Enviar el formulario solo si todas las validaciones son exitosas
+                if (allValidationsPassed) {
+                    $('#teachForm')[0].submit(); // Envía el formulario
+                    $('#successMessageTeach').text('Registro Exitoso');
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr.status + ": " + xhr.responseText);
+                $('#emailErrorTeach').text('Error al verificar el correo').css('color', 'red');
+                allValidationsPassed = false; // Marcar como que la validación falló
+            }
+        });
+    });
+
+    function validateInput(inputElement, errorMessage) {
+    var errorElement = $('#' + inputElement.attr('id') + 'Error');
+    var pattern = /^[a-zA-ZñÑ\s]{2,20}$/;
+    var trimmedValue = inputElement.val().trim(); //
+
+    if (!trimmedValue) {
+        errorMessage = 'Este campo es obligatorio.';
+    } else if (!pattern.test(trimmedValue)) {
+        errorMessage = 'Debe tener entre 2 y 20 caracteres y solo letras.';
+    } else {
+        errorMessage = ''; 
+    }
+
+    // Buscar el elemento error por su ID
+    if (!errorElement.length) {
+        errorElement = $('<div class="error-message"></div>'); // Crear el elemento si no existe
+        errorElement.attr('id', inputElement.attr('id') + 'Error');
+        inputElement.after(errorElement); // Insertar después del input
+    }
+
+    errorElement.text(errorMessage); // Actualizar el mensaje de error
+
+    if (errorMessage) {
+        inputElement.addClass('input-error');
+        errorElement.css('color', 'red'); 
+        return false;
+    } else {
+        inputElement.removeClass('input-error');
+        errorElement.css('color', '');
+        return true;
+    }
+}
+    function validatePassword(passwordElement, confirmPasswordElement) {
+        var pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,15}$/;
+        var password = passwordElement.val();
+        var confirmPassword = confirmPasswordElement.val();
+        var error = false;
+
+        if (!pattern.test(password)) {
+            passwordElement.addClass('input-error');
+            $('#passwordError').text('Debe tener una mayúscula, una minúscula, un número y un carácter especial, mínimo 8 caracteres y máximo 15.').css('color', 'red');
+            error = true;
+        } else {
+            passwordElement.removeClass('input-error');
+            $('#passwordError').text('').css('color', 'red');
+        }
+
+        if (!pattern.test(confirmPassword)) {
+            confirmPasswordElement.addClass('input-error');
+            $('#passwordConfirmError').text('Debe tener una mayúscula, una minúscula, un número y un carácter especial, mínimo 8 caracteres y máximo 15.').css('color', 'red');
+            error = true;
+        } else {
+            confirmPasswordElement.removeClass('input-error');
+            $('#passwordConfirmError').text('').css('color', 'red');
+        }
+
+        if (password !== confirmPassword) {
+            confirmPasswordElement.addClass('input-error');
+            $('#passwordConfirmError').text('Las contraseñas no coinciden').css('color', 'red');
+            error = true;
+        }
+
+        return !error; 
+    }
+});
+////mensaje de registro exitoso
+    $(document).ready(function(){
+        // Bloquear la entrada en el campo de búsqueda y mostrar el modal de advertencia
+        $('#searchForm').on('click', function(event){
+            event.preventDefault(); // Prevenir la acción por defecto
+            $('#warningModal').modal('show'); // Mostrar el modal de advertencia
+        });
+
+        // Deshabilitar la entrada de texto en el campo de búsqueda
+        $('#searchForm input[type="search"]').on('keypress', function(event) {
+            event.preventDefault();
+        });
+    });
+    </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</body>
+</html>

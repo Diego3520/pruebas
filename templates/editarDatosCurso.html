@@ -1,0 +1,158 @@
+{% extends 'basest/baseEditarCurso.html' %}
+{% load static %}
+{% block content %}
+    <style>
+        .required::after {
+            content: " *";
+            color: red;
+        }
+    </style>
+    <div class="container">
+    <h1 class="text-center mt-2">Editar datos curso</h1>
+    <div class="row">
+        <div class="col-7 m-md-4 border">
+            <form id="courseForm" method="POST" action="{% url 'editar_curso' curso.id %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="courseName" class="form-label required">Nombre del curso</label>
+                    <input type="text" class="form-control" id="courseName" name="courseName" required minlength="20"
+                           maxlength="50" placeholder="Mínimo 20 caracteres y máximo 50" value="{{ curso.nombre }}">
+                </div>
+                <div class="mb-3">
+                    <label for="courseDescription" class="form-label required">Descripción del curso</label>
+                    <textarea class="form-control" id="courseDescription" name="courseDescription" required
+                              maxlength="1404" placeholder="Máximo 1404 caracteres">{{ curso.descripcion }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="courseCategory" class="form-label required">Categoría</label>
+                    <select class="form-select" id="courseCategory" name="courseCategory" required>
+                        <option selected disabled>Elige una categoría</option>
+                        <option value="Economía" {% if curso.categoria == "Economía" %}selected{% endif %}>Economía
+                        </option>
+                        <option value="Tecnología" {% if curso.categoria == "Tecnología" %}selected{% endif %}>
+                            Tecnología
+                        </option>
+                        <option value="Humanidades" {% if curso.categoria == "Humanidades" %}selected{% endif %}>
+                            Humanidades
+                        </option>
+                        <option value="Medicina" {% if curso.categoria == "Medicina" %}selected{% endif %}>Medicina
+                        </option>
+                        <option value="Ciencias jurídicas"
+                                {% if curso.categoria == "Ciencias jurídicas" %}selected{% endif %}>Ciencias jurídicas
+                        </option>
+                        <option value="Arquitectura" {% if curso.categoria == "Arquitectura" %}selected{% endif %}>
+                            Arquitectura
+                        </option>
+                        <!-- Agrega más opciones según sea necesario -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="courseDuration" class="form-label required">Duración del curso</label>
+                    <input type="number" class="form-control" id="courseDuration" name="courseDuration" required
+                           oninput="validateInput(this)" placeholder="Ejemplo: 2 (significa 2 horas)"
+                           value="{{ curso.duracion }}" max="99999">
+                </div>
+                <div class="mb-3">
+                    <label for="courseDifficulty" class="form-label required">Dificultad del curso</label>
+                    <select class="form-select" id="courseDifficulty" name="courseDifficulty" required>
+                        <option selected disabled>Elige la dificultad</option>
+                        <option value="Principiante" {% if curso.nivel == 'Principiante' %}selected{% endif %}>
+                            Principiante
+                        </option>
+                        <option value="Intermedio" {% if curso.nivel == 'Intermedio' %}selected{% endif %}>Intermedio
+                        </option>
+                        <option value="Avanzado" {% if curso.nivel == 'Avanzado' %}selected{% endif %}>Avanzado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <select class="form-select" id="coursePayment" name="coursePayment" required
+                            onchange="checkPayment(this)">
+                        <option selected disabled>Elige si tu curso será gratuita o de pago</option>
+                        <option value="gratis" {% if curso.precio == 0 %}selected{% endif %}>Gratuito</option>
+                        <option value="pago" {% if curso.precio > 0 %}selected{% endif %}>Pago</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="courseCostDiv"
+                     style="{% if curso.precio > 0 %}display: block;{% else %}display: none;{% endif %}">
+                    <label for="courseCost" class="form-label required">Costo del curso (en bolivianos)</label>
+                    <input type="number" class="form-control" id="courseCost" name="courseCost" required
+                           oninput="validateInput(this)" placeholder="Ejemplo: 50 (significa 50 bolivianos)"
+                           value="{{ curso.precio }}" max="1000000000">
+                </div>
+            </form>
+        </div>
+        <div class="col-3 m-md-4 border"></div>
+    </div>
+    </div>
+    <script>
+        window.onload = function () {
+            // Obtén los elementos de entrada de texto
+            let textInputs = document.querySelectorAll('input[type="text"], textarea');
+
+            // Agrega un controlador de eventos 'keypress' a cada entrada de texto
+            textInputs.forEach(function (input) {
+                input.addEventListener('keypress', function (event) {
+                    // Si la tecla presionada es un espacio y el campo de texto está vacío, evita que se ingrese
+                    if (event.key === ' ' && input.value.length === 0) {
+                        event.preventDefault();
+                    }
+                });
+            });
+        }
+    
+        function checkPayment(select) {
+            let costDiv = document.getElementById('courseCostDiv');
+            if (select.value === 'pago') {
+                costDiv.style.display = 'block';
+                document.getElementById('courseCost').required = true;
+            } else {
+                costDiv.style.display = 'none';
+                document.getElementById('courseCost').required = false;
+            }
+        }
+
+        function validateInput(input) {
+            if (input.value <= 0 || !Number.isInteger(parseFloat(input.value))) {
+                input.setCustomValidity('El valor debe ser un número entero mayor a 0.');
+            } else {
+                input.setCustomValidity('');
+            }
+        }
+
+        let textarea = document.getElementById('courseDescription');
+        textarea.addEventListener('input', autoResize, false);
+
+        function autoResize() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        }
+
+        function submitForm() {
+            let form = document.getElementById('courseForm');
+
+            // Obtén los elementos select
+            let selects = form.querySelectorAll('select');
+
+            // Verifica si se ha seleccionado una opción válida en cada select
+            let allSelectsValid = Array.from(selects).every(function (select) {
+                // Si la opción seleccionada es 'disabled', muestra un mensaje de error personalizado
+                if (select.options[select.selectedIndex].disabled) {
+                    select.setCustomValidity('Por favor, selecciona una opción.');
+                    return false;
+                } else {
+                    select.setCustomValidity('');
+                    return true;
+                }
+            });
+
+            // Si todos los selects son válidos y el formulario es válido, envía el formulario
+            if (allSelectsValid && form.checkValidity()) {
+                form.submit();
+            } else {
+                // Si no, muestra los mensajes de error de validación
+                form.reportValidity();
+            }
+        }
+    </script>
+
+{% endblock %}

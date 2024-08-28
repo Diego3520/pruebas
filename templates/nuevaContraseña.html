@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Cambio de Contraseña</title>
+    <link rel="icon" href="{% static 'images/icon.jpg' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 70vh;
+            margin: 0;
+        }
+
+        {#        :root {#}
+        {#    --blue-chill-50: #f2f9f9;#}
+        {#    --blue-chill-100: #ddeff0;#}
+        {#    --blue-chill-200: #bfe0e2;#}
+        {#    --blue-chill-300: #92cace;#}
+        {#    --blue-chill-400: #5faab1;#}
+        {#    --blue-chill-500: #438e96;#}
+        {#    --blue-chill-600: #3b757f;#}
+        {#    --blue-chill-700: #356169;#}
+        {#    --blue-chill-800: #325158;#}
+        {#    --blue-chill-900: #2d464c;#}
+        {#    --blue-chill-950: #1a2c32;#}
+
+        .container {
+            border-radius: 18px;
+            background: linear-gradient(145deg, #bfe0e2, #3b757f);
+            box-shadow: 7px 7px 15px #1a2c32,
+            -7px -7px 15px #438e96;
+            width: 30vw;
+            {#height: 30vh;#}
+            overflow: visible;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 1em;
+            text-align: center;
+            color: #1a2c32;
+        }
+
+        label {
+            display: block;
+            margin-bottom: .5em;
+            font-size: 1.2em;
+            color: #1a2c32;
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 10px 50px 10px 10px;
+            margin-bottom: 0.5em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1.2em;
+            color: #f2f9f9;
+            background-color: #1a2c32;
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-100%);
+            cursor: pointer;
+            line-height: 1;
+            color: white;
+        }
+
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn {
+            display: block;
+            width: 50%; /* Ajusta este valor para controlar el ancho del botón */
+            padding: 10px;
+            background-color: #5faab1;
+            color: #f2f9f9;
+            border: 2px solid #1a2c32;
+            box-shadow: 7px 7px 5px #1a2c32,
+            -7px -7px 5px #438e96;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.2em;
+            margin-right: auto; /* Alinea el botón a la izquierda */
+            margin-top: 20px;
+        }
+
+        #password-validation-messages li, #confirm-password-validation-messages li {
+            margin: 0; /* Elimina el margen */
+        }
+
+        #password-validation-messages, #confirm-password-validation-messages {
+            text-align: left; /* Alinea los mensajes a la izquierda */
+            margin: 0;
+            padding: 0;
+        }
+
+        .validation-message {
+            display: none;
+            color: red;
+        }
+
+        .validation-message.active {
+            display: block;
+        }
+        .btn:hover {
+            background-color: #3b757f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cambiar contraseña</h2>
+    <form method="POST" action="{% url 'change_password' uidb64=uid %}">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="new-password">Contraseña nueva*</label>
+            <div class="password-container">
+                <input id="new-password" name="new_password" type="password" required maxlength="128">
+                <i onclick="togglePasswordVisibility('new-password')" class="eye-icon fas fa-eye"></i>
+            </div>
+            <ul id="password-validation-messages">
+                <li id="length-validation" class="validation-message">La contraseña debe tener entre 8 y 128
+                    caracteres
+                </li>
+                <li id="uppercase-validation" class="validation-message">La contraseña debe contener al menos una letra
+                    mayúscula
+                </li>
+                <li id="lowercase-validation" class="validation-message">La contraseña debe contener al menos una letra
+                    minúscula
+                </li>
+                <li id="number-validation" class="validation-message">La contraseña debe contener al menos un número
+                </li>
+                <li id="special-character-validation" class="validation-message">La contraseña debe contener al menos un
+                    carácter especial
+                </li>
+                <li id="same-password-validation" class="validation-message">La nueva contraseña no puede ser la misma
+                    que la antigua
+                </li>
+            </ul>
+        </div>
+        <div class="mb-4">
+            <label for="confirm-password">Confirmar contraseña*</label>
+            <div class="password-container">
+                <input id="confirm-password" name="confirm_password" type="password" required maxlength="128">
+                <i onclick="togglePasswordVisibility('confirm-password')" class="eye-icon fas fa-eye"></i>
+            </div>
+            <ul id="confirm-password-validation-messages">
+                <li id="match-validation" class="validation-message">Las contraseñas deben coincidir</li>
+            </ul>
+        </div>
+        <button type="submit" class="btn">Confirmar cambio</button>
+    </form>
+</div>
+
+<script>
+    function togglePasswordVisibility(id) {
+        var passwordInput = document.getElementById(id);
+        var type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        var eyeIcon = passwordInput.nextElementSibling;
+        eyeIcon.className = 'eye-icon ' + (type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash');
+    }
+
+    function validatePassword() {
+        var passwordInput = document.getElementById('new-password');
+        var password = passwordInput.value;
+        var validationMessages = document.querySelectorAll('.validation-message');
+
+        validationMessages.forEach(function (message) {
+            message.classList.remove('active');
+        });
+
+        if (!/[A-Z]/.test(password)) {
+
+            document.getElementById('uppercase-validation').classList.add('active');
+            return;
+        }
+        if (!/[a-z]/.test(password)) {
+
+            document.getElementById('lowercase-validation').classList.add('active');
+            return;
+        }
+        if (!/[0-9]/.test(password)) {
+
+            document.getElementById('number-validation').classList.add('active');
+            return;
+        }
+        if (!/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~¡¿ü]/.test(password)) {
+            document.getElementById('special-character-validation').classList.add('active');
+            return;
+        }
+        if (password.length < 8 || password.length > 128) {
+            document.getElementById('length-validation').classList.add('active');
+            return;
+        }
+
+        validateConfirmPassword();
+        validatePasswordSim();
+        updateSubmitButtonState();
+    }
+
+    function validateConfirmPassword() {
+        var passwordInput = document.getElementById('new-password');
+        var confirmPasswordInput = document.getElementById('confirm-password');
+        var password = passwordInput.value;
+        var confirmPassword = confirmPasswordInput.value;
+
+        if (password && confirmPassword && password !== confirmPassword) {
+            document.getElementById('match-validation').classList.add('active');
+        } else {
+            document.getElementById('match-validation').classList.remove('active');
+        }
+        updateSubmitButtonState();
+    }
+
+    function validatePasswordSim() {
+        var passwordInput = document.getElementById('new-password');
+        var password = passwordInput.value;
+        var validationMessages = document.querySelectorAll('.validation-message');
+
+        var isValid = Array.from(validationMessages).every(function (message) {
+            return !message.classList.contains('active');
+        });
+
+        if (!isValid) {
+            return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/check_same_password/', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                var response = JSON.parse(this.responseText);
+                if (response.same_password) {
+                    document.getElementById('same-password-validation').classList.add('active');
+                } else {
+                    document.getElementById('same-password-validation').classList.remove('active');
+                }
+                updateSubmitButtonState(); // Llamar a updateSubmitButtonState() aquí
+            }
+        }
+        var uidb64 = "{{ uid }}";
+        xhr.send('new_password=' + encodeURIComponent(password) + '&uidb64=' + encodeURIComponent(uidb64));
+    }
+
+    function updateSubmitButtonState() {
+        var validationMessages = document.querySelectorAll('.validation-message');
+        var isValid = Array.from(validationMessages).every(function (message) {
+            return !message.classList.contains('active');
+        });
+        document.querySelector('.btn').disabled = !isValid;
+    }
+
+    document.getElementById('new-password').addEventListener('input', function () {
+        validatePassword();
+        validatePasswordSim()
+    });
+
+    document.getElementById('confirm-password').addEventListener('input', function () {
+        validateConfirmPassword();
+        validatePasswordSim();
+    });
+
+    document.getElementById('new-password').addEventListener('keyup', function () {
+        validatePassword();
+        var validationMessages = document.querySelectorAll('.validation-message');
+        var isValid = Array.from(validationMessages).every(function (message) {
+            return !message.classList.contains('active');
+        });
+        if (isValid) {
+            validatePasswordSim();
+        }
+    });
+
+    document.getElementById('confirm-password').addEventListener('keyup', function () {
+        validateConfirmPassword();
+    });
+</script>
+
+</body>
+</html>

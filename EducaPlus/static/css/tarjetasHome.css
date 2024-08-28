@@ -1,0 +1,59 @@
+.accordion-button-custom::after {
+    /* Oculta la flecha predeterminada */
+    display: none;
+}
+
+.accordion-button-custom::before {
+    /* Agrega nuestra propia flecha al principio del botón */
+    content: '\25B6';
+    float: left;
+    transition: transform 0.6s ease;
+}
+
+.accordion-button-custom:not(.collapsed)::before {
+    /* Cambia la dirección de la flecha cuando el acordeón está abierto */
+    transform: rotate(90deg);
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#tit {
+    font-size: 40px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.buy-button {
+    background-color: var(--blue-chill-500);
+    color: var(--blue-chill-50);
+}
+
+.buy-button:hover {
+    background-color: var(--blue-chill-600) !important;
+}
+
+#giphy-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente */
+}
+
+#giphy-iframe {
+    width: 80%;
+    height: 80%;
+    pointer-events: none; /* Añade esta línea */
+}

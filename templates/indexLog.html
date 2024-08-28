@@ -1,0 +1,86 @@
+{% extends 'basest/baseLoginEstudiante.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tarjetasHome.css' %}">
+    <script>
+        $(document).ready(function () {
+
+            $('.add-to-cart').click(function () {
+                var cursoId = $(this).data('curso-id');
+
+                $.ajax({
+                    data: {
+                        'curso_id': cursoId
+                    },
+                    url: '/add_cart/' + cursoId + '/',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.success) {
+                            // Aquí puedes actualizar el número de artículos en el carrito en la interfaz de usuario
+                            $('#cart-count').text(data.cart_count);
+                            toastr.success('Curso añadido al carrito');
+                        } else {
+                            if (data.error === 'El curso ya está en el carrito') {
+                                toastr.warning('Este curso ya se agregó al carrito');
+                            } else {
+                                toastr.error('Ocurrió un error inesperado');
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    <div class="container">
+        <h1 id="tit">Categorías</h1>
+        <div class="accordion" id="accordionExample">
+            {% for categoria in categorias %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button accordion-button-custom collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="true"
+                                aria-controls="collapse{{ forloop.counter }}">
+                            {{ categoria }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse"
+                         aria-labelledby="heading{{ forloop.counter }}">
+                        <div class="accordion-body">
+                            {% for curso in cursos %}
+                                {% if curso.categoria == categoria %}
+                                    <div class="card mb-3">
+                                        <div class="row g-0">
+                                            <div class="col-md-8">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ curso.nombre }}</h5>
+                                                    <p class="card-text">
+                                                        Instructor: {{ curso.instructor.user.first_name }} {{ curso.instructor.user.last_name }}</p>
+                                                    <p class="card-text">Nivel: {{ curso.nivel }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 d-flex align-items-center justify-content-center">
+                                                <div class="card-body">
+                                                    <p class="card-text">
+                                                        Precio: {% if curso.precio == 0 %}Gratis{% else %}
+                                                        {{ curso.precio }}Bs{% endif %}
+                                                    </p>
+                                                    <a href="{% url 'compraCursos' curso.id %}"
+                                                       class="btn btn-primary buy-button">Comprar</a>
+                                                    <button type="button" class="btn btn-warning add-to-cart"
+                                                            data-curso-id="{{ curso.id }}">
+                                                        Añadir al Carrito
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

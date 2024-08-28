@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EducaPlus</title>
+    <link rel="icon" href="{% static 'images/icon.jpg' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-personalizado">
+    <div class="container-fluid d-flex justify-content-between">
+        <div class="d-flex justify-content-start">
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                    <button type="button" class="btn btn-outline-success custom-button" onclick="cancelForm()">Cancelar
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="d-flex justify-content-end">
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                    <button type="button" class="btn btn-outline-success custom-button"
+                            onclick="submitForm()">Guardar
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- Notificación de guardar curso-->
+<div id="notification" class="d-flex justify-content-end position-fixed bottom-0 end-0 p-3" style="z-index: 5; width: 100%;">
+    <div id="notificationContent" class="toast align-items-center text-white bg-success border-0" role="alert"
+         aria-live="assertive" aria-atomic="true" style="width: 30%;">
+        <div class="d-flex justify-content-center align-items-center" style="width: 100%; height: 100%;">
+            <div class="toast-body text-center" style="font-size: 1.5em;">
+                Curso Registrado
+            </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                aria-label="Close"></button>
+    </div>
+</div>
+{% block content %}{% endblock %}
+<script>
+    var notificationElement = document.getElementById('notificationContent');
+
+    var notification = new bootstrap.Toast(notificationElement);
+
+    function cancelForm() {
+        // Restablecer el formulario
+        document.getElementById('courseForm').reset();
+
+        // Enviar una solicitud GET a la ruta 'crearCursos'
+        fetch('/crearCursos', {method: 'GET'})
+            .then(response => {
+                if (response.ok) {
+                    // Si la respuesta es exitosa, redirigir al usuario
+                    window.location.href = response.url;
+                } else {
+                    console.error('Error:', response.status, response.statusText);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    function hideNotification() {
+        notification.hide();
+    }
+
+    function showNotification() {
+        notification.show();
+        setTimeout(hideNotification, 5000); // Oculta la notificación después de 5 segundos
+    }
+</script>
+</body>
+</html>

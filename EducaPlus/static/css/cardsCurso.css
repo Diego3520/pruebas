@@ -1,0 +1,92 @@
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    width: 80%; /* reduce the width */
+    height: 240px; /* reduce the height */
+    margin: 10%; /* add some margin */
+    border-radius: 5px;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+    color: #000;
+    max-width: 50ch; /* Limita el ancho a 50 caracteres */
+    margin-right: 10px; /* Agrega margen a la derecha para evitar superposición con el menú */
+}
+
+.card-subtitle {
+    color: #666;
+    font-size: 18px;
+}
+
+.card-body {
+    padding: 2px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto; /* Permite el desplazamiento si el contenido es demasiado largo */
+    height: 230px; /* Establece un alto específico para .card-body */
+}
+
+.card-text {
+    color: #333;
+    font-size: 16px;
+    overflow: auto; /* Permite el desplazamiento si el contenido es demasiado largo */
+    flex-grow: 1; /* Permite que el elemento crezca para ocupar cualquier espacio extra */
+    max-height: 100px; /* Limita la altura a 80px. Ajusta este valor según tus necesidades */
+}
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.cursos-container {
+    padding-left: 10%; /* add padding to the left */
+    padding-right: 10%; /* add padding to the right */
+}
+
+h1 {
+    font-size: 40px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.limited-text {
+    overflow: auto;
+    max-height: 200px; /* Ajusta este valor según tus necesidades */
+    scrollbar-width: none;
+}
+
+.limited-text::-webkit-scrollbar {
+    display: none;
+}
+
+.curso-dropdown .dropdown-toggle::after {
+    display: none;
+}
+
+.curso-dropdown .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+.curso-dropdown .dropdown {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.curso-dropdown .icon-tabler-dots-vertical {
+    margin: 0;
+    align-self: center;
+}

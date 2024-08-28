@@ -1,0 +1,361 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EducaPlus</title>
+    <link rel="icon" href="{% static 'images/icon.jpg' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <!-- Enlace al archivo de iconos de Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/estiloModal.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-personalizado">
+    <div class="container-fluid d-flex justify-content-between">
+        <form class="d-flex">
+            <input id="search-bar" class="form-control me-2 custom-search-bar" type="search" name="q" placeholder="Buscar..." aria-label="Search">
+        </form>
+        <div>
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                    <a href="{% url 'crearDatosCursos' %}" class="btn btn-outline-success custom-button">Nuevo curso</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img id="navbar-picture" src="{{ instructor.foto_perfil.url }}"
+                             class="icono-perfil me-2"
+                             style="width: 25px; height: 25px; display: {% if instructor.foto_perfil %}block{% else %}none{% endif %}; border-radius: 50%; object-fit: cover;">
+                        <img id="navbardefault-picture" src="{% static 'images/person-circle.svg' %}" alt="User Icon"
+                             width="25" height="25"
+                             class="icono-perfil me-2"
+                             style="display: {% if instructor.foto_perfil %}none{% else %}block{% endif %}; border-radius: 50%;">
+                        {{ request.user.first_name.split|first }} {{ request.user.last_name.split|first }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item text-dark" href="#" data-bs-toggle="modal" data-bs-target="#dialogo2">Ver perfil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-dark" href="/logout">Cerrar sesión</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="modal fade" id="dialogo2">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5 class="modal-title w-100" id="exModalLabel">Perfil</h5>
+                <button type="button" class="btn-close" name="button" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <!-- Agregar el formulario con el atributo action y el token CSRF -->
+                    <form method="POST" id= "editarPerfilForm" enctype="multipart/form-data" action="{% url 'updateInstructor' %}">
+                        {% csrf_token %} <!-- Agregar el token CSRF -->
+
+                        <!-- Contenido del formulario -->
+                        <div class="row mb-3">
+                            <label class="col-3 col-form-label visually-hidden">
+                                DATOS PERSONALES
+                            </label>
+                            <div class="d-flex justify-content-center">
+                                <div class="profile-icon-container position-relative">
+                                    <img id="profile-picture" src="{{ instructor.foto_perfil.url }}"
+                                         class="icono-perfil"
+                                         style="width: 250px; height: 250px; display: {% if instructor.foto_perfil %}block{% else %}none{% endif %}; border-radius: 50%; object-fit: cover;">
+                                    <img id="default-picture" src="{% static 'images/person-circle.svg' %}"
+                                         alt="User Icon" width="150" height="150"
+                                         class="bi bi-person-circle bi-lg icono-perfil"
+                                         style="display: {% if instructor.foto_perfil %}none{% else %}block{% endif %};">
+                                    <input type="file" id="profile-picture-input" name="foto_perfil"
+                                           accept="image/jpg, image/png" style="display: none;">
+                                    <i class="bi bi-pencil-square" id="edit-icon"
+                                       title="Editar foto de perfil formatos aceptados .jpg, .png."
+                                       style="position: absolute; bottom: 0; right: 0; cursor: pointer;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="firstName" class="form-label">Nombre*:</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName"
+                                   value="{{ instructor.first_name }}"
+                                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}"
+                                   title="Debe contener solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres."
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lastName" class="form-label">Apellidos*:</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName"
+                                   value="{{ instructor.last_name }}"
+                                   pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}"
+                                   title="Debe contener solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres."
+                                   required>
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dob" class="form-label">Fecha de nacimiento*:</label>
+                            <input type="date" class="form-control" id="dob" name="dob"
+                                   value="{{ instructor.date_of_birth|date:'Y-m-d' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="specialization" class="form-label">Área de especialización*:</label>
+                            <select id="specialization" name="specialization" class="form-select" required>
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Economía">Economía</option>
+                                <option value="Humanidades">Humanidades</option>
+                                <option value="Medicina">Medicina</option>
+                                <option value="Ciencias jurídicas">Ciencias jurídicas</option>
+                                <option value="Arquitectura">Arquitectura</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md text-center">
+                                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block content %}{% endblock %}
+<script>
+    $(document).ready(function () {
+        $('#dialogo2').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            $.ajax({
+                type: 'GET',
+                url: '/obtener-datos-instructor/',  // Ajusta la URL según tu configuración de URLs en Django
+                success: function (data) {
+                    console.log(data);  // Para verificar la estructura de los datos en la consola
+                    modal.find('#firstName').val(data.first_name);
+                    modal.find('#lastName').val(data.last_name);
+                    modal.find('#dob').val(data.date_of_birth);
+                    modal.find('#specialization').val(data.specialization);
+                    
+                    var profilePicture = document.getElementById('profile-picture');
+                    var defaultPicture = document.getElementById('default-picture');
+                    if (data.foto_perfil) {
+                        profilePicture.src = data.foto_perfil;
+                        profilePicture.style.display = 'block';
+                        defaultPicture.style.display = 'none';
+                    } else {
+                        profilePicture.style.display = 'none';
+                        defaultPicture.style.display = 'block';
+                    }
+                },
+                error: function (xhr, errmsg, err) {
+                    console.log(xhr.status + ": " + xhr.responseText);  // Manejo de errores
+                }
+            });
+        });
+    });
+    
+    $(document).ready(function () {
+        $.ajax({
+            type: 'GET',  // Cambia a GET
+            url: '/get_instructor_image/',  // Verifica que esta URL sea correcta
+            success: function (data) {
+                console.log(data);
+                // Añade estas líneas para manejar la imagen de perfil
+                var navbarPicture = document.getElementById('navbar-picture');
+                var navbardefault = document.getElementById('navbardefault-picture');
+                if (data.foto_perfil) {
+                    navbarPicture.src = data.foto_perfil;
+                    navbarPicture.style.display = 'block';
+                    navbardefault.style.display = 'none';
+                } else {
+                    navbarPicture.style.display = 'none';
+                    navbardefault.style.display = 'block';
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);  // Manejo de errores
+            }
+        });
+    });
+    
+    document.getElementById('edit-icon').addEventListener('click', function () {
+        document.getElementById('profile-picture-input').click();
+    });
+
+    document.getElementById('profile-picture-input').addEventListener('change', function (e) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var profilePicture = document.getElementById('profile-picture');
+            var defaultPicture = document.getElementById('default-picture');
+            profilePicture.src = e.target.result;
+            profilePicture.style.display = 'block';
+            defaultPicture.style.display = 'none';
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+    
+    
+    function validateFirstName() {
+        var firstNameInput = document.getElementById('firstName');
+        var firstNameValue = firstNameInput.value.trim();
+    
+        // Patrón para permitir solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres
+        var pattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}$/;
+    
+        // Validar el valor del campo firstName con el patrón
+        if (!pattern.test(firstNameValue)) {
+            // Mostrar un mensaje de error
+            alert('El nombre debe contener solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres.');
+            // Devolver false para indicar que la validación no pasó
+            return false;
+        }
+    
+        // La validación pasó, devolver true para indicar que la validación fue exitosa
+        return true;
+    }
+    
+    // Asignar la función validateFirstName al evento submit del formulario
+    // Asignar la función validateFirstName al evento submit del formulario
+    document.getElementById('editarPerfilForm').onsubmit = function () {
+        return validateFirstName();
+    };
+    
+    
+    function validateLastName() {
+        var lastNameInput = document.getElementById('lastName');
+        var lastNameValue = lastNameInput.value.trim();
+    
+        // Patrón para permitir solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres
+        var pattern = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]{2,50}$/;
+    
+        // Validar el valor del campo lastName con el patrón
+        if (!pattern.test(lastNameValue)) {
+            // Mostrar un mensaje de error
+            alert('El apellido debe contener solo letras (mayúsculas o minúsculas), incluir espacios si es necesario, y tener entre 2 y 50 caracteres.');
+            // Devolver false para indicar que la validación no pasó
+            return false;
+        }
+    
+        // La validación pasó, devolver true para indicar que la validación fue exitosa
+        return true;
+    }
+
+    window.onload = function () {
+        var dob = document.getElementById('dob');
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //Enero es 0
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        dob.setAttribute("max", today);
+    };
+
+    document.getElementById('profile-picture-input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+
+        // Verificar el tamaño del archivo (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("El archivo es demasiado grande! El tamaño máximo permitido es 5MB.");
+            this.value = null; // Limpiar el input
+            return false;
+        }
+
+        // Verificar las dimensiones de la imagen
+        var img = new Image();
+        img.onload = function () {
+            var width = this.width;
+            var height = this.height;
+
+            if (width < 200 || height < 200) {
+                alert("Las dimensiones de la imagen son demasiado pequeñas! El tamaño mínimo permitido es 200x200px.");
+                document.getElementById('profile-picture-input').value = null; // Limpiar el input
+                return false;
+            }
+
+            // Si la imagen pasa las validaciones, proceder a cargarla
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var profilePicture = document.getElementById('profile-picture');
+                var defaultPicture = document.getElementById('default-picture');
+                profilePicture.src = e.target.result;
+                profilePicture.style.display = 'block';
+                defaultPicture.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+        }
+        img.src = URL.createObjectURL(file);
+    });
+
+    // Asignar la función validateLastName al evento submit del formulario
+    document.getElementById('editarPerfilForm').onsubmit = function () {
+        return validateLastName();
+    };
+    //buscar cursos
+    $(document).ready(function () {
+        $('#search-bar').on('input', function () {
+            var query = $(this).val();
+            $.ajax({
+                url: "{% url 'search_courses' %}",
+                type: "GET",
+                data: {'q': query},
+                success: function (data) {
+                    $('.cursos-container .row').empty();
+                    if (data.cursos.length > 0) {
+                        data.cursos.forEach(function (curso) {
+                            var card = `
+                                    <div class="col-md-3">
+                                        <a href="#" class="card-link">
+                                            <div class="card">
+                                                <div class="card-body position-relative">
+                                                    <h5 class="card-title">${curso.nombre}</h5>
+                                                    <p class="card-text limited-text">${curso.descripcion}</p>
+                                                </div>
+                                                <div class="dropdown position-absolute top-0 end-0 mt-3 curso-dropdown">
+                                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#438e96" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                                            <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                            <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                            <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
+                                                        </svg>
+                                                    </a>
+                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                        <li><a class="dropdown-item" href="/curso/${curso.id}/obtenerDatosCurso/">Editar datos</a></li>
+                                                        <li><a class="dropdown-item" href="/agregarContenido/${curso.id}/">Agregar contenido</a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="eliminarCurso('${curso.id}')">Eliminar curso</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                `;
+                            $('.cursos-container .row').append(card);
+                        });
+                    } else {
+                        var emptyMessage = `
+                                <div class="col-12 text-center mt-5">
+                                    <p>No se encontraron cursos.</p>
+                                </div>
+                            `;
+                        $('.cursos-container .row').append(emptyMessage);
+                    }
+                }
+            });
+        });
+    });
+//
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</body>
+</html>

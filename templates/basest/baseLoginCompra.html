@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EducaPlus</title>
+    <link rel="icon" href="{% static 'images/icon.jpg' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/navbar.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'css/estiloModal.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light navbar-personalizado">
+    <div class="container-fluid d-flex justify-content-between">
+        <div>
+            <a class="navbar-brand" href="/indexLog/">
+                <img src="{% static 'images/casa.svg' %}" alt="User Icon" width="23" height="23"
+                     class="d-inline-block align-text-top">
+                Inicio
+            </a>
+        </div>
+        <div>
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="/carrito/">
+                        <img src="{% static 'images/cart.svg' %}" alt="Cart Icon" width="25" height="25"
+                             class="d-inline-block align-text-top">
+                        <span id="cart-count" class="cart-count">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cursosEstudiante/">Mis cursos</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                       role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <img id="navbar-picture" src="{{ estudiante.foto_perfil.url }}"
+                             class="icono-perfil me-2"
+                             style="width: 25px; height: 25px; display: {% if estudiante.foto_perfil %}block{% else %}none{% endif %}; border-radius: 50%; object-fit: cover;">
+                        <img id="navbardefault-picture" src="{% static 'images/person-circle.svg' %}" alt="User Icon"
+                             width="25" height="25"
+                             class="icono-perfil me-2"
+                             style="display: {% if estudiante.foto_perfil %}none{% else %}block{% endif %}; border-radius: 50%;">
+                        {{ request.user.first_name.split|first }} {{ request.user.last_name.split|first }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item text-dark" href="#" data-bs-toggle="modal"
+                               data-bs-target="#dialogo1">Ver perfil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-dark" href="/logout">Cerrar sesión</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="modal fade" id="dialogo1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5 class="modal-title w-100" id="exModalLabel">Perfil</h5>
+                <button type="button" class="btn-close" name="button" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <form method="POST" id = "editarPerfilForm" enctype="multipart/form-data" action="{% url 'updateEstudiante' %}">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <label class="col-3 col-form-label visually-hidden">
+                                DATOS PERSONALES
+                            </label>
+                            <div class="d-flex justify-content-center">
+                                <div class="profile-icon-container position-relative">
+                                    <img id="profile-picture" src="{{ estudiante.foto_perfil.url }}"
+                                         class="icono-perfil"
+                                         style="width: 250px; height: 250px; display: {% if estudiante.foto_perfil %}block{% else %}none{% endif %}; border-radius: 50%; object-fit: cover;">
+                                    <img id="default-picture" src="{% static 'images/person-circle.svg' %}"
+                                         alt="User Icon" width="150" height="150"
+                                         class="bi bi-person-circle bi-lg icono-perfil"
+                                         style="display: {% if estudiante.foto_perfil %}none{% else %}block{% endif %};">
+                                    <input type="file" id="profile-picture-input" name="foto_perfil"
+                                           accept="image/jpg, image/png" style="display: none;">
+                                    <i class="bi bi-pencil-square" id="edit-icon"
+                                       title="Editar foto de perfil formatos aceptados .jpg, .png."
+                                       style="position: absolute; bottom: 0; right: 0; cursor: pointer;"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">
+                                Nombre <span class="campo-requerido">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ estudiante.nombre }}" required
+                                   pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$"
+                                   title="El nombre debe contener solo letras y tener entre 2 y 50 caracteres.">
+                            <div id="nombreError" class="invalid-feedback"></div> <!-- Mensaje de error -->
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label">
+                                Apellido <span class="campo-requerido">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="apellido" name="apellido" 
+                                   value="{{ estudiante.apellido }}" required
+                                   pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}"
+                                   title="Por favor ingrese un apellido válido (solo letras, mínimo 2 caracteres y máximo 50 caracteres)">
+                            <div id="apellidoError" class="invalid-feedback"></div> <!-- Mensaje de error -->
+                        </div>
+                        
+                        
+                        <div class="mb-3">
+                            <label for="fecha_nacimiento" class="form-label">
+                                Fecha de nacimiento <span class="campo-requerido">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                                   value="{{ estudiante.fecha_nacimiento }}" required>
+                            <div id="fechaNacimientoError" class="invalid-feedback"></div> <!-- Elemento para mostrar mensajes de error -->
+                        </div>
+
+                        <div class="row">
+                            <div class="col text-center">
+                                <button type="submit" class="btn btn-primary">
+                                    Guardar cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block content %}{% endblock %}
+<script>
+    $(document).ready(function () {
+        toastr.options = {
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": true,
+            "newestOnTop": false,
+            "timeOut": "1000"
+        };
+
+        // Solicita el contador del carrito del servidor
+        $.ajax({
+            url: '/obtener_contador_carrito/',
+            dataType: 'json',
+            success: function (data) {
+                if (data.success) {
+                    $('#cart-count').text(data.cart_count);
+                } else {
+                    toastr.error('Ocurrió un error inesperado');
+                }
+            }
+        });
+    });
+    $(document).ready(function () {
+        $('#dialogo1').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            $.ajax({
+                type: 'GET',  // Cambia a GET
+                url: '/obtener-datos-usuario/',  // Verifica que esta URL sea correcta
+                success: function (data) {
+                    console.log(data);  // Debugging para verificar la estructura de los datos
+                    modal.find('#nombre').val(data.nombre);
+                    modal.find('#apellido').val(data.apellido);
+                    modal.find('#fecha_nacimiento').val(data.fecha_nacimiento);
+
+                    // Añade estas líneas para manejar la imagen de perfil
+                    var profilePicture = document.getElementById('profile-picture');
+                    var defaultPicture = document.getElementById('default-picture');
+                    if (data.foto_perfil) {
+                        profilePicture.src = data.foto_perfil;
+                        profilePicture.style.display = 'block';
+                        defaultPicture.style.display = 'none';
+                    } else {
+                        profilePicture.style.display = 'none';
+                        defaultPicture.style.display = 'block';
+                    }
+                },
+                error: function (xhr, errmsg, err) {
+                    console.log(xhr.status + ": " + xhr.responseText);  // Manejo de errores
+                }
+            });
+        });
+    });
+    $(document).ready(function () {
+        $.ajax({
+            type: 'GET',  // Cambia a GET
+            url: '/get_student_image/',  // Verifica que esta URL sea correcta
+            success: function (data) {
+                console.log(data);
+                // Añade estas líneas para manejar la imagen de perfil
+                var navbarPicture = document.getElementById('navbar-picture');
+                var navbardefault = document.getElementById('navbardefault-picture');
+                if (data.foto_perfil) {
+                    navbarPicture.src = data.foto_perfil;
+                    navbarPicture.style.display = 'block';
+                    navbardefault.style.display = 'none';
+                } else {
+                    navbarPicture.style.display = 'none';
+                    navbardefault.style.display = 'block';
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(xhr.status + ": " + xhr.responseText);  // Manejo de errores
+            }
+        });
+    });
+    $(document).ready(function() {
+        $('#profileForm').submit(function (e) {
+            var nombreInput = $('#nombre').val();
+            var nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{2,50}$/;
+
+            if (!nombrePattern.test(nombreInput)) {
+                //alert('El nombre debe contener solo letras y tener entre 2 y 50 caracteres.');
+                e.preventDefault(); // Evitar que se envíe el formulario si la validación falla
+            }
+        });
+    });
+    $(document).ready(function() {
+        $('#profileForm').submit(function(event) {
+            var apellidoValue = $('#apellido').val();
+            var soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+            if (!soloLetras.test(apellidoValue) || apellidoValue.length < 2 || apellidoValue.length > 50) {
+                event.preventDefault();
+                //alert('Por favor ingrese un apellido válido (solo letras, mínimo 2 caracteres y máximo 50 caracteres).');
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $('#perfilForm').submit(function(event) {
+            var fechaNacimiento = new Date($('#fecha_nacimiento').val());
+            var fechaActual = new Date();
+
+            // Verificar si la fecha de nacimiento es válida y no es futura ni la fecha actual
+            if (isNaN(fechaNacimiento) || fechaNacimiento > fechaActual) {
+                // Mostrar mensaje de error
+                $('#fechaNacimientoError').text('La fecha de nacimiento no puede ser una fecha futura ni la fecha actual.');
+                event.preventDefault(); // Evitar que se envíe el formulario si la fecha es futura o actual
+            } else {
+                // Limpiar mensaje de error si la fecha es válida
+                $('#fechaNacimientoError').text('');
+            }
+        });
+    });
+    window.onload = function () {
+        var dob = document.getElementById('fecha_nacimiento');
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //Enero es 0
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        dob.setAttribute("max", today);
+    };
+
+    //busqueda de curso
+    //Separacion de busqueda segun la pagina que se encuentre
+$(document).ready(function () {
+    var currentPath = window.location.pathname;
+
+    // Solo ejecutar la lógica de sugerencias en la página indexLog
+    if (currentPath === '{% url "indexLog" %}') {
+        $('#search-input2').on('input', function () {
+            var query = $(this).val();
+            if (query.length > 1) {
+                $.ajax({
+                    url: '{% url "buscar_cursos" %}',
+                    data: {
+                        'q': query
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#search-results2').empty();
+                        data.forEach(function (curso) {
+                            $('#search-results2').append('<a href="/compraCursos/' + curso.id + '/" class="list-group-item list-group-item-action">' + curso.nombre + '</a>');
+                        });
+                    }
+                });
+            } else {
+                $('#search-results2').empty();
+            }
+        });
+    }
+
+    // Lógica de búsqueda para cursosEstudiante
+    if (currentPath === '{% url "cursosEstudiante" %}') {
+        $('#search-input2').on('input', function () {
+            var searchTerm = $(this).val().toLowerCase();
+            $('.student-course-card').each(function () {
+                var courseName = $(this).data('course-name').toLowerCase();
+                if (courseName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    }
+});
+    document.getElementById('edit-icon').addEventListener('click', function () {
+        document.getElementById('profile-picture-input').click();
+    });
+
+    document.getElementById('profile-picture-input').addEventListener('change', function (e) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var profilePicture = document.getElementById('profile-picture');
+            var defaultPicture = document.getElementById('default-picture');
+            profilePicture.src = e.target.result;
+            profilePicture.style.display = 'block';
+            defaultPicture.style.display = 'none';
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+    document.getElementById('profile-picture-input').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+
+        // Verificar el tamaño del archivo (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("El archivo es demasiado grande! El tamaño máximo permitido es 5MB.");
+            this.value = null; // Limpiar el input
+            return false;
+        }
+
+        // Verificar las dimensiones de la imagen
+        var img = new Image();
+        img.onload = function () {
+            var width = this.width;
+            var height = this.height;
+
+            if (width < 200 || height < 200) {
+                alert("Las dimensiones de la imagen son demasiado pequeñas! El tamaño mínimo permitido es 200x200px.");
+                document.getElementById('profile-picture-input').value = null; // Limpiar el input
+                return false;
+            }
+
+            // Si la imagen pasa las validaciones, proceder a cargarla
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var profilePicture = document.getElementById('profile-picture');
+                var defaultPicture = document.getElementById('default-picture');
+                profilePicture.src = e.target.result;
+                profilePicture.style.display = 'block';
+                defaultPicture.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+        }
+        img.src = URL.createObjectURL(file);
+    });
+</script>
+</body>
+</html>

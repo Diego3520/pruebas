@@ -1,0 +1,284 @@
+{% extends 'basest/baseAgregarContenido.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tarjetasContenido.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <div class="container">
+        <h1 id="tit" style="font-size: 2em; color: #333; text-align: center; padding: 20px;">Contenido de: {{ curso.nombre }}</h1>
+        <div class="accordion" id="accordionExample">
+            {% for seccion in secciones %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button accordion-button-custom collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="true"
+                                aria-controls="collapse{{ forloop.counter }}">
+                            Sección {{ forloop.counter }}: {{ seccion.nombre }}
+                        </button>
+                        <button class="btn btn-primary add-content-button small-right-button"
+                                data-section="{{ seccion.id }}"
+                                title="Nota: Solo se pueden subir archivos de tipo .jpg, .jpeg, .png, .mp4, .mpeg, .mp3, .ppt, .pdf">
+                            Agregar archivo
+                        </button>
+                        <form class="upload-form" data-section="{{ seccion.id }}" style="display: none;"
+                              method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="section_id" value="{{ seccion.id }}">
+                            <button type="button" class="btn btn-primary file-select-button">Selecciona un archivo:
+                            </button>
+                            <input type="file" id="file{{ seccion.id }}" name="file"
+                                   accept=".jpg,.jpeg,.png,.mp4, .mpeg, .mp3,.ppt,.pdf" style="display: none;" multiple>
+                            <!-- Contenedor para los nombres de los archivos -->
+                            <div id="fileList{{ seccion.id }}">
+                                <p class="file-list-title">Lista de archivos</p>
+                                <p id="defaultMessage{{ seccion.id }}" class="default-message">No hay ningún archivo
+                                    seleccionado</p>
+                                <ul id="fileItems{{ seccion.id }}"></ul>
+                            </div>
+                            <div class="button-upload">
+                                <button type="button" class="btn btn-secondary cancel-button cancel-upload-button">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-secondary upload-button">Subir</button>
+                            </div>
+                        </form>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse"
+                         aria-labelledby="heading{{ forloop.counter }}">
+                        <div class="accordion-body">
+                            {% for archivo in seccion.archivo_set.all %}
+                                <div class="card mb-3">
+                                    <div class="row g-0 d-flex justify-content-center">
+                                        <div class="col-md-8 d-flex justify-content-center">
+                                            <div class="card-body">
+                                                <p class="card-text">
+                                                    {% if archivo.tipo == 'video' %}
+                                                        <video width="700" height="500" controls>
+                                                            <source src="{{ archivo.url }}" type="video/mp4">
+                                                            <source src="{{ archivo.url }}" type="video/mpeg">
+                                                            Tu navegador no soporta el elemento de video.
+                                                        </video>
+                                                    {% elif archivo.tipo == 'imagen' %}
+                                                        <a href="{{ archivo.url }}"
+                                                           data-lightbox="image-{{ forloop.parentloop.counter }}-{{ forloop.counter }}-{{ archivo.id }}">
+                                                            <div style="width:700px; height:500px; border: none; ">
+                                                                <img src="{{ archivo.url }}" alt="{{ archivo.nombre }}"
+                                                                     style="width: 100%; height: 100%; object-fit: contain;">
+                                                            </div>
+                                                        </a>
+                                                    {% elif archivo.tipo == 'audio' %}
+                                                        <audio controls>
+                                                            <source src="{{ archivo.url }}" type="audio/mpeg">
+                                                            Tu navegador no soporta el elemento de audio.
+                                                        </audio>
+                                                    {% elif archivo.tipo == 'pdf' or archivo.tipo == 'ppt' %}
+                                                        <iframe src="https://docs.google.com/gview?url={{ archivo.url }}&embedded=true"
+                                                                style="width:700px; height:500px; border: none;"></iframe>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div style="text-align: center; padding: 20px; background-color: #f8f8f8; border-radius: 5px; margin-top: 20px;">
+                                    <h5 style="color: #888;">Todavía no se agrego ningún archivo en esta sección.</h5>
+                                </div>
+                            {% endfor %}
+                            <!-- Formulario oculto para cargar archivos a la sección -->
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div style="text-align: center; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                    <h5 style="color: #888;">No hay secciones por ahora, agrega uno.</h5>
+                </div>
+            {% endfor %}
+            <button id="add-section-modal-button" class="btn btn-primary fixed-bottom-button" data-bs-toggle="modal"
+                    data-bs-target="#addSectionModal">Agregar sección
+            </button>
+        </div>
+    </div>
+    <!-- Modal para agregar una nueva sección -->
+    <div class="modal fade" id="addSectionModal" tabindex="-1" aria-labelledby="addSectionModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSectionModalLabel">Agregar sección</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'add_section' curso.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="sectionName" class="form-label">Nombre de la sección</label>
+                            <input type="text" class="form-control" id="sectionName" name="section_name" minlength="3" maxlength="80"
+                                   required oninput="removeLeadingSpaces(this)">
+                        </div>
+                        <button type="submit" id= "agregar-cont" class="btn btn-primary">Agregar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Get all upload forms
+        var uploadForms = document.getElementsByClassName('upload-form');
+
+        // Add a submit event to each upload form
+        for (var i = 0; i < uploadForms.length; i++) {
+            uploadForms[i].addEventListener('submit', function (event) {
+                // Get the file input of this form
+                var fileInput = this.querySelector('input[type="file"]');
+
+                // If no file has been selected, cancel the form submission and show a message
+                if (fileInput.files.length === 0) {
+                    event.preventDefault();
+                    toastr.error('Por favor selecciona por lo menos un archivo antes de subir.');
+                }
+            });
+        }
+
+        // Get all add content buttons
+        var addContentButtons = document.getElementsByClassName('add-content-button');
+
+        // Add a click event to each add content button
+        for (var i = 0; i < addContentButtons.length; i++) {
+            addContentButtons[i].addEventListener('click', function (event) {
+                // Prevent the button's default action
+                event.preventDefault();
+
+                // Get the section ID from the button's 'data-section' attribute
+                var sectionId = this.getAttribute('data-section');
+
+                // Get the corresponding form
+                var form = document.querySelector('form[data-section="' + sectionId + '"]');
+
+                // If the form is already visible, hide it. If not, show it.
+                if (form.style.display === 'block') {
+                    form.style.display = 'none';
+                } else {
+                    form.style.display = 'block';
+                }
+            });
+        }
+
+        // Get all cancel buttons
+        var cancelButtons = document.getElementsByClassName('cancel-button');
+
+        // Add a click event to each cancel button
+        for (var i = 0; i < cancelButtons.length; i++) {
+            cancelButtons[i].addEventListener('click', function (event) {
+                // Prevent the button's default action
+                event.preventDefault();
+
+                // Hide the form that contains this button
+                var form = this.closest('form');
+                form.style.display = 'none';
+
+                // Get the file input from the form and clear the selected files
+                var fileInput = form.querySelector('input[type="file"]');
+                fileInput.value = '';
+
+                // Get the list item container and clear its content
+                var fileItems = document.getElementById('fileItems' + form.getAttribute('data-section'));
+                fileItems.innerHTML = '';
+
+                // Show the default message
+                var defaultMessage = document.getElementById('defaultMessage' + form.getAttribute('data-section'));
+                defaultMessage.style.display = 'block';
+            });
+        }
+
+        // Get all file select buttons
+        var fileSelectButtons = document.getElementsByClassName('file-select-button');
+
+        // Add a click event to each file select button
+        for (var i = 0; i < fileSelectButtons.length; i++) {
+            fileSelectButtons[i].addEventListener('click', function (event) {
+                // Prevent the button's default action
+                event.preventDefault();
+
+                // Get the corresponding file input and simulate a click on it
+                var fileInput = this.nextElementSibling;
+                fileInput.click();
+            });
+        }
+
+        // Get all file inputs
+        var fileInputs = document.querySelectorAll('input[type="file"]');
+
+        // Add a change event to each file input
+        for (var i = 0; i < fileInputs.length; i++) {
+            fileInputs[i].addEventListener('change', function () {
+                // Get the form that contains this input
+                var form = this.closest('form');
+
+                // Get the list item container
+                var fileItems = document.getElementById('fileItems' + form.getAttribute('data-section'));
+
+                // Clear the list item container
+                fileItems.innerHTML = '';
+
+                // For each file, create a list item and add it to the list item container
+                for (var j = 0; j < this.files.length; j++) {
+                    var file = this.files[j];
+                    var listItem = document.createElement('li');
+                    listItem.textContent = file.name;
+                    listItem.className = 'file-list-item';
+                    fileItems.appendChild(listItem);
+                }
+
+                // If files were selected, hide the default message
+                var defaultMessage = document.getElementById('defaultMessage' + form.getAttribute('data-section'));
+                if (this.files.length > 0) {
+                    defaultMessage.style.display = 'none';
+                } else {
+                    defaultMessage.style.display = 'block';
+                }
+            });
+        }
+
+        toastr.options = {
+            "positionClass": "toast-bottom-left",
+            "closeButton": true,
+            newestOnTop: true,
+            timeOut: 7000
+        }
+
+        function removeLeadingSpaces(input) {
+            if (input.value.charAt(0) === ' ') {
+                input.value = input.value.slice(1);
+            }
+        }
+
+        $(document).ready(function () {
+            $('#addSectionModal').on('shown.bs.modal', function () {
+                $('#sectionName').focus();
+            });
+        });
+        $(document).ready(function () {
+            $('#addSectionModal').on('hidden.bs.modal', function () {
+                $('#sectionName').val('');
+            });
+        });
+    </script>
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                {% if 'seccion_agregada' in message.tags %}
+                    toastr.success("{{ message }}");
+                {% elif 'archivo_subido' in message.tags %}
+                    toastr.success("{{ message }}");
+                {% elif 'error' in message.tags %}
+                    toastr.error("{{ message }}");
+                {% endif %}
+            {% endfor %}
+        </script>
+    {% endif %}
+{% endblock %}

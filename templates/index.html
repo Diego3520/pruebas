@@ -1,0 +1,112 @@
+{% extends 'basest/base.html' %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/tarjetasHome.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/egg.js/1.0/egg.min.js"></script>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        toastr.options = {
+            "positionClass": "toast-bottom-right",
+        }
+    </script>
+    <div class="container">
+        <h1 id="tit">Categorías</h1>
+        <div class="accordion" id="accordionExample">
+            {% for categoria in categorias %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button accordion-button-custom collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                aria-expanded="true"
+                                aria-controls="collapse{{ forloop.counter }}">
+                            {{ categoria }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse"
+                         aria-labelledby="heading{{ forloop.counter }}">
+                        <div class="accordion-body">
+                            {% for curso in cursos %}
+                                {% if curso.categoria == categoria %}
+                                    <div class="card mb-3">
+                                        <div class="row g-0">
+                                            <div class="col-md-8">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ curso.nombre }}</h5>
+                                                    <p class="card-text">
+                                                        Instructor: {{ curso.instructor.user.first_name }} {{ curso.instructor.user.last_name }}</p>
+                                                    <p class="card-text">Nivel: {{ curso.nivel }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 d-flex align-items-center justify-content-center">
+                                                <div class="card-body">
+                                                    <p class="card-text">
+                                                        Precio: {% if curso.precio == 0 %}Gratis{% else %}
+                                                        {{ curso.precio }}Bs{% endif %}
+                                                    </p>
+                                                    <button class="btn btn-primary buy-button" data-bs-toggle="modal"
+                                                            data-bs-target="#alerta">Comprar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="modal fade" id="alerta" tabindex="-1" aria-labelledby="alertaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertaLabel">Iniciar sesión requerido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Por favor inicie sesión o regístrese para comprar este curso.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <!-- Giphy Container -->
+    <div id="giphy-container" style="display: none;">
+        <iframe id="giphy-iframe" width="100%" height="100%" src="https://giphy.com/embed/Ju7l5y9osyymQ"
+                frameborder="0" class="giphy-embed" allowfullscreen></iframe>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var egg = new Egg();
+            egg
+                .addCode("up,up,down,down,left,right,left,right,b,a", function () {
+                    // Mostrar el contenedor del GIF
+                    document.getElementById('giphy-container').style.display = 'flex';
+                })
+                .listen();
+
+            // Ocultar el contenedor del GIF cuando se hace clic en él
+            document.getElementById('giphy-container').addEventListener('click', function () {
+                this.style.display = 'none';
+            });
+        });
+    </script>
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                {% if 'password_changed' in message.tags %}
+                toastr.success("{{ message }}");
+                {% endif %}
+            {% endfor %}
+        </script>
+    {% endif %}
+{% endblock %}
