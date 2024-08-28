@@ -6,7 +6,7 @@ charset-normalizer==3.3.2
 colorama==0.4.6
 decorator==4.4.2
 dj-database-url==2.1.0
-Django==4.2.15
+Django==5.0.6
 gunicorn==22.0.0
 idna==3.7
 imageio==2.34.1
